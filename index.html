@@ -12,34 +12,38 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #0d0f14;
-    --bg2: #141720;
-    --card: #1c2030;
-    --card2: #242840;
+    --bg: #0d0f14; --bg2: #141720; --card: #1c2030; --card2: #242840;
     --border: #2e3350;
-    --amber: #f5a623;
-    --amber-dim: rgba(245,166,35,0.15);
-    --red: #f04f4f;
-    --red-dim: rgba(240,79,79,0.15);
-    --green: #3ecf8e;
-    --green-dim: rgba(62,207,142,0.12);
+    --amber: #f5a623; --amber-dim: rgba(245,166,35,0.15);
+    --red: #f04f4f; --red-dim: rgba(240,79,79,0.15);
+    --green: #3ecf8e; --green-dim: rgba(62,207,142,0.12);
     --blue: #5b8def;
-    --text: #e8ecf5;
-    --text2: #8892a8;
-    --text3: #555e7a;
-    --radius: 14px;
-    --radius-sm: 8px;
+    --text: #e8ecf5; --text2: #8892a8; --text3: #555e7a;
+    --radius: 14px; --radius-sm: 8px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; overflow: auto; }
-
-  /* ── LAYOUT ── */
-  #app { display: flex; flex-direction: column; height: 100%; max-width: 480px; margin: 0 auto; position: relative; }
-  .screen { flex: 1; overflow-y: auto -webkit-overflow-scrolling: touch; padding: 0 16px 90px; display: none; }
+  #auth-screen {
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    min-height: 100vh; padding: 40px 24px; max-width: 420px; margin: 0 auto;
+  }
+  #auth-screen.visible { display: flex; }
+  .auth-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 52px; font-weight: 800; letter-spacing: -1px; margin-bottom: 6px; text-align: center; }
+  .auth-logo span { color: var(--amber); }
+  .auth-tagline { color: var(--text2); font-size: 15px; margin-bottom: 48px; font-weight: 300; text-align: center; }
+  .auth-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; width: 100%; }
+  .auth-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .auth-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+  .auth-success { background: var(--green-dim); border: 1px solid rgba(62,207,142,0.25); border-radius: var(--radius-sm); padding: 16px; text-align: center; display: none; }
+  .auth-success.visible { display: block; }
+  .auth-success-icon { font-size: 32px; margin-bottom: 8px; }
+  .auth-success-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+  .auth-success-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  #app { display: none; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; position: relative; }
+  #app.visible { display: flex; }
+  .screen { flex: 1; overflow-y: auto; padding: 0 16px 90px; display: none; -webkit-overflow-scrolling: touch; }
   .screen.active { display: block; }
   .screen::-webkit-scrollbar { display: none; }
-
-  /* ── NAV ── */
   nav {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 480px;
@@ -57,26 +61,9 @@
   }
   nav button.active { color: var(--amber); }
   nav button svg { width: 22px; height: 22px; stroke-width: 1.8; }
-
-  /* ── HEADER ── */
   .page-header { padding: 20px 0 16px; display: flex; align-items: center; justify-content: space-between; }
   .page-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
   .page-title span { color: var(--amber); }
-
-  /* ── SETUP SCREEN ── */
-  #setup-screen {
-    display: flex; flex-direction: column; justify-content: center;
-    min-height: 100vh; padding: 40px 24px;
-  }
-  .setup-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 48px; font-weight: 800; letter-spacing: -1px; margin-bottom: 6px; }
-  .setup-logo span { color: var(--amber); }
-  .setup-tagline { color: var(--text2); font-size: 15px; margin-bottom: 40px; font-weight: 300; }
-  .setup-section { margin-bottom: 28px; }
-  .setup-section h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
-  .setup-note { font-size: 13px; color: var(--text2); margin-bottom: 16px; line-height: 1.5; }
-  .setup-note a { color: var(--amber); text-decoration: none; }
-
-  /* ── FORMS ── */
   label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text2); margin-bottom: 6px; margin-top: 16px; }
   label:first-of-type { margin-top: 0; }
   input[type=text], input[type=email], input[type=url], input[type=date], select, textarea {
@@ -90,16 +77,12 @@
   select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
   textarea { resize: vertical; min-height: 80px; }
   input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
-
-  /* ── BUTTONS ── */
   .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm); font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
   .btn:active { transform: scale(0.98); opacity: 0.85; }
   .btn-primary { background: var(--amber); color: #0d0f14; }
   .btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
   .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(240,79,79,0.3); }
   .btn-sm { padding: 9px 18px; font-size: 13px; width: auto; display: inline-block; }
-
-  /* ── CARDS ── */
   .vehicle-card {
     background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 16px; margin-bottom: 12px; cursor: pointer;
@@ -113,31 +96,15 @@
   .vehicle-card.has-overdue .vehicle-card-accent { background: var(--red); }
   .vehicle-card.has-soon .vehicle-card-accent { background: var(--amber); }
   .vehicle-card.all-ok .vehicle-card-accent { background: var(--green); }
-
   .vc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
   .vc-name { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; }
   .vc-reg { font-family: 'Barlow Condensed', sans-serif; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 3px 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.05em; color: var(--text2); }
   .vc-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
   .badge-ok { background: var(--green-dim); color: var(--green); }
   .badge-soon { background: var(--amber-dim); color: var(--amber); }
   .badge-overdue { background: var(--red-dim); color: var(--red); }
-  .badge-off { background: var(--card2); color: var(--text3); }
   .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-
-  /* ── DETAIL ROWS ── */
-  .detail-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
-  .detail-section-header { padding: 13px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .detail-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text2); display: flex; align-items: center; gap: 8px; }
-  .detail-row { padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-  .detail-row:last-child { border-bottom: none; }
-  .detail-label { font-size: 13px; color: var(--text2); font-weight: 500; }
-  .detail-value { font-size: 14px; font-weight: 600; text-align: right; max-width: 60%; word-break: break-word; }
-  .detail-value a { color: var(--amber); text-decoration: none; }
-  .detail-value a:hover { text-decoration: underline; }
-
-  /* ── TOGGLE ── */
   .toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
   .toggle-wrap:last-child { border-bottom: none; }
   .toggle-label { font-size: 13px; color: var(--text2); }
@@ -147,22 +114,12 @@
   .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
   .toggle input:checked + .toggle-slider { background: var(--amber); }
   .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
-
-  /* ── EMPTY STATE ── */
   .empty-state { text-align: center; padding: 60px 20px; }
   .empty-icon { font-size: 52px; margin-bottom: 16px; opacity: 0.4; }
   .empty-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
   .empty-sub { font-size: 14px; color: var(--text3); line-height: 1.5; }
-
-  /* ── SECTION GROUP ── */
   .form-group { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
   .form-group-title { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 14px; }
-
-  /* ── ALERT BANNER ── */
-  .alert-banner { background: var(--red-dim); border: 1px solid rgba(240,79,79,0.3); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; font-size: 13px; color: var(--red); display: flex; align-items: flex-start; gap: 8px; }
-  .alert-banner.warn { background: var(--amber-dim); border-color: rgba(245,166,35,0.3); color: var(--amber); }
-
-  /* ── SUMMARY STRIP ── */
   .summary-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
   .summary-tile { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; }
   .summary-num { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; line-height: 1; }
@@ -170,59 +127,41 @@
   .summary-num.amber { color: var(--amber); }
   .summary-num.green { color: var(--green); }
   .summary-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-top: 4px; }
-
-  /* ── MODAL ── */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: flex-end; justify-content: center; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 480px; }
   .modal h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
   .modal p { font-size: 14px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
-
-  /* ── SPACING UTILITIES ── */
-  .mt8 { margin-top: 8px; }
-  .mt12 { margin-top: 12px; }
-  .mt16 { margin-top: 16px; }
-  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+  .user-strip { background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .user-email { font-size: 13px; color: var(--text2); }
+  .user-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green); background: var(--green-dim); padding: 3px 8px; border-radius: 20px; }
+  .mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; } .mt16 { margin-top: 16px; }
   .flex-row { display: flex; gap: 10px; }
   .flex-row .btn { flex: 1; }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════ SETUP SCREEN ══════════════════════════════ -->
-<div id="setup-screen">
-  <div class="setup-logo">Vehicle<span>Vault</span></div>
-  <p class="setup-tagline">Track insurance, MOT & servicing for all your vehicles</p>
-
-  <div class="setup-section">
-    <h3>Your Email</h3>
-    <p class="setup-note">Where reminders will be sent when things are due.</p>
-    <label>Email Address</label>
-    <input type="email" id="setup-email" placeholder="you@example.com">
+<div id="auth-screen">
+  <div class="auth-logo">Vehicle<span>Vault</span></div>
+  <p class="auth-tagline">Track insurance, MOT & servicing for all your vehicles</p>
+  <div class="auth-card">
+    <div id="auth-form-wrap">
+      <div class="auth-title">Sign in</div>
+      <p class="auth-sub">Enter your email and we'll send you a login link. No password needed.</p>
+      <label>Email Address</label>
+      <input type="email" id="auth-email" placeholder="you@example.com" style="margin-bottom:16px">
+      <button class="btn btn-primary" onclick="sendMagicLink()">Send Login Link</button>
+    </div>
+    <div class="auth-success" id="auth-success">
+      <div class="auth-success-icon">📬</div>
+      <div class="auth-success-title">Check your email</div>
+      <p class="auth-success-text">We've sent a login link to your email address. Tap the link in the email to sign in.</p>
+    </div>
   </div>
-
-  <div class="setup-section">
-    <h3>Supabase Connection</h3>
-    <p class="setup-note">
-      Your data is stored in your own free <a href="https://supabase.com" target="_blank">Supabase</a> account.
-      See the setup guide for how to get these values.
-    </p>
-    <label>Project URL</label>
-    <input type="text" id="setup-url" placeholder="https://xxxx.supabase.co">
-    <label>Anon Key</label>
-    <input type="text" id="setup-key" placeholder="eyJhbGciOiJ...">
-  </div>
-
-  <button class="btn btn-primary" onclick="saveSetup()">Get Started →</button>
-  <p class="setup-note mt12" style="text-align:center; font-size:12px;">
-    Don't have Supabase yet? See the <strong>SETUP GUIDE</strong> file included with this app.
-  </p>
 </div>
 
-<!-- ══════════════════════════════ MAIN APP ══════════════════════════════ -->
-<div id="app" style="display:none">
-
-  <!-- DASHBOARD -->
+<div id="app">
   <div id="screen-dashboard" class="screen active">
     <div class="page-header">
       <div class="page-title">Vehicle<span>Vault</span></div>
@@ -232,29 +171,21 @@
       <div class="summary-tile"><div class="summary-num amber" id="count-soon">0</div><div class="summary-lbl">Due Soon</div></div>
       <div class="summary-tile"><div class="summary-num green" id="count-ok">0</div><div class="summary-lbl">All Clear</div></div>
     </div>
-    <div id="alerts-container"></div>
     <div id="vehicles-list"></div>
   </div>
 
-  <!-- ADD/EDIT VEHICLE -->
   <div id="screen-add" class="screen">
     <div class="page-header">
       <div class="page-title" id="form-title">Add <span>Vehicle</span></div>
       <button class="btn btn-sm btn-secondary" id="delete-btn" onclick="confirmDelete()" style="display:none">Delete</button>
     </div>
-
     <input type="hidden" id="edit-id">
-
     <div class="form-group">
       <div class="form-group-title">Vehicle Details</div>
-      <label>Make (e.g. Ford)</label>
-      <input type="text" id="f-make" placeholder="Ford">
-      <label>Model (e.g. Focus)</label>
-      <input type="text" id="f-model" placeholder="Focus">
-      <label>Year</label>
-      <input type="text" id="f-year" placeholder="2019">
-      <label>Registration</label>
-      <input type="text" id="f-reg" placeholder="AB19 XYZ" style="text-transform:uppercase">
+      <label>Make (e.g. Ford)</label><input type="text" id="f-make" placeholder="Ford">
+      <label>Model (e.g. Focus)</label><input type="text" id="f-model" placeholder="Focus">
+      <label>Year</label><input type="text" id="f-year" placeholder="2019">
+      <label>Registration</label><input type="text" id="f-reg" placeholder="AB19 XYZ" style="text-transform:uppercase">
       <label>Type</label>
       <select id="f-type">
         <option value="car">Car</option>
@@ -263,89 +194,58 @@
         <option value="other">Other</option>
       </select>
     </div>
-
     <div class="form-group">
       <div class="form-group-title">🛡 Insurance</div>
-      <label>Expiry Date</label>
-      <input type="date" id="f-ins-date">
-      <label>Insurance Company</label>
-      <input type="text" id="f-ins-company" placeholder="Direct Line">
-      <label>Policy Number</label>
-      <input type="text" id="f-ins-policy" placeholder="POL-123456">
-      <label>Link / Login URL</label>
-      <input type="url" id="f-ins-link" placeholder="https://...">
+      <label>Expiry Date</label><input type="date" id="f-ins-date">
+      <label>Insurance Company</label><input type="text" id="f-ins-company" placeholder="Direct Line">
+      <label>Policy Number</label><input type="text" id="f-ins-policy" placeholder="POL-123456">
+      <label>Link / Login URL</label><input type="url" id="f-ins-link" placeholder="https://...">
       <div class="toggle-wrap mt8">
         <span class="toggle-label">Send reminders for insurance</span>
         <label class="toggle"><input type="checkbox" id="f-ins-remind" checked><span class="toggle-slider"></span></label>
       </div>
     </div>
-
     <div class="form-group">
       <div class="form-group-title">🔧 MOT</div>
-      <label>Due Date</label>
-      <input type="date" id="f-mot-date">
-      <label>Notes</label>
-      <input type="text" id="f-mot-notes" placeholder="e.g. Kwik Fit, High Street">
+      <label>Due Date</label><input type="date" id="f-mot-date">
+      <label>Notes</label><input type="text" id="f-mot-notes" placeholder="e.g. Kwik Fit, High Street">
       <div class="toggle-wrap mt8">
         <span class="toggle-label">Send reminders for MOT</span>
         <label class="toggle"><input type="checkbox" id="f-mot-remind" checked><span class="toggle-slider"></span></label>
       </div>
     </div>
-
     <div class="form-group">
       <div class="form-group-title">⚙️ Servicing</div>
-      <label>Next Service Date</label>
-      <input type="date" id="f-svc-date">
-      <label>Due Mileage</label>
-      <input type="text" id="f-svc-mileage" placeholder="45,000">
-      <label>Service Provider</label>
-      <input type="text" id="f-svc-provider" placeholder="Halfords Autocentre">
-      <label>Link / Booking URL</label>
-      <input type="url" id="f-svc-link" placeholder="https://...">
+      <label>Next Service Date</label><input type="date" id="f-svc-date">
+      <label>Due Mileage</label><input type="text" id="f-svc-mileage" placeholder="45,000">
+      <label>Service Provider</label><input type="text" id="f-svc-provider" placeholder="Halfords Autocentre">
+      <label>Link / Booking URL</label><input type="url" id="f-svc-link" placeholder="https://...">
       <div class="toggle-wrap mt8">
         <span class="toggle-label">Send reminders for servicing</span>
         <label class="toggle"><input type="checkbox" id="f-svc-remind" checked><span class="toggle-slider"></span></label>
       </div>
     </div>
-
     <div class="form-group">
       <div class="form-group-title">📝 Notes</div>
       <textarea id="f-notes" placeholder="Any extra details..."></textarea>
     </div>
-
     <button class="btn btn-primary" onclick="saveVehicle()">Save Vehicle</button>
     <div class="mt8"></div>
   </div>
 
-  <!-- SETTINGS -->
   <div id="screen-settings" class="screen">
     <div class="page-header">
       <div class="page-title">Set<span>tings</span></div>
     </div>
-
-    <div class="form-group">
-      <div class="form-group-title">Reminder Email</div>
-      <label>Email Address</label>
-      <input type="email" id="s-email" placeholder="you@example.com">
-      <p class="setup-note mt8">Reminders are sent 1 month before each due date (where enabled).</p>
+    <div class="user-strip">
+      <span class="user-email" id="settings-email"></span>
+      <span class="user-badge">Logged In</span>
     </div>
-
-    <div class="form-group">
-      <div class="form-group-title">Supabase Connection</div>
-      <label>Project URL</label>
-      <input type="text" id="s-url">
-      <label>Anon Key</label>
-      <input type="text" id="s-key">
-    </div>
-
-    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-    <div class="mt16"></div>
     <button class="btn btn-secondary" onclick="exportData()">Export Data (JSON)</button>
     <div class="mt8"></div>
-    <button class="btn btn-danger mt8" onclick="confirmReset()">Reset App</button>
+    <button class="btn btn-danger mt8" onclick="confirmSignOut()">Sign Out</button>
   </div>
 
-  <!-- BOTTOM NAV -->
   <nav>
     <button id="nav-dashboard" class="active" onclick="showScreen('dashboard')">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
@@ -362,11 +262,10 @@
   </nav>
 </div>
 
-<!-- DELETE MODAL -->
 <div class="modal-overlay" id="delete-modal">
   <div class="modal">
     <h3>Delete Vehicle?</h3>
-    <p>This will permanently delete this vehicle and all its data. This cannot be undone.</p>
+    <p>This will permanently delete this vehicle and all its data.</p>
     <div class="flex-row">
       <button class="btn btn-secondary" onclick="closeModal('delete-modal')">Cancel</button>
       <button class="btn btn-danger" onclick="deleteVehicle()">Delete</button>
@@ -374,71 +273,62 @@
   </div>
 </div>
 
-<!-- RESET MODAL -->
-<div class="modal-overlay" id="reset-modal">
+<div class="modal-overlay" id="signout-modal">
   <div class="modal">
-    <h3>Reset App?</h3>
-    <p>This clears all local settings. Your data in Supabase is not deleted.</p>
+    <h3>Sign Out?</h3>
+    <p>You'll need to use a login link to get back in.</p>
     <div class="flex-row">
-      <button class="btn btn-secondary" onclick="closeModal('reset-modal')">Cancel</button>
-      <button class="btn btn-danger" onclick="resetApp()">Reset</button>
+      <button class="btn btn-secondary" onclick="closeModal('signout-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="signOut()">Sign Out</button>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════
-// CONFIG & INIT
-// ══════════════════════════════════════════════════════
-let supabaseClient = null;
+const SUPABASE_URL = 'https://jxwbgbqzhwiirnffqefz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_h_Nu5t9ck5fH_8FIuV_YdQ_o0IngSHL';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
 let vehicles = [];
-const CFG_KEY = 'vv_config';
 
-function getConfig() {
-  try { return JSON.parse(localStorage.getItem(CFG_KEY) || 'null'); } catch { return null; }
-}
-function setConfig(c) { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
-
-function initSupabase(url, key) {
-  try {
-    supabaseClient = window.supabase.createClient(url, key);
-    return true;
-  } catch(e) { return false; }
-}
-
-window.addEventListener('load', () => {
-  const cfg = getConfig();
-  if (cfg && cfg.url && cfg.key && cfg.email) {
-    initSupabase(cfg.url, cfg.key);
-    document.getElementById('setup-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    loadVehicles();
-  } else {
-    document.getElementById('setup-screen').style.display = 'flex';
+window.addEventListener('load', async () => {
+  if (window.location.hash.includes('access_token')) {
+    await sb.auth.getSession();
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { currentUser = session.user; showApp(); }
+  else { showAuth(); }
+  sb.auth.onAuthStateChange((_event, session) => {
+    if (session) { currentUser = session.user; showApp(); }
+    else { currentUser = null; showAuth(); }
+  });
 });
 
-async function saveSetup() {
-  const email = document.getElementById('setup-email').value.trim();
-  const url = document.getElementById('setup-url').value.trim();
-  const key = document.getElementById('setup-key').value.trim();
-  if (!email || !url || !key) { alert('Please fill in all fields.'); return; }
-  if (!initSupabase(url, key)) { alert('Could not connect to Supabase. Check your URL and key.'); return; }
-  // Test connection
-  const { error } = await supabaseClient.from('vehicles').select('id').limit(1);
-  if (error && error.code !== 'PGRST116') {
-    alert('Connection failed: ' + error.message + '\n\nMake sure you have created the vehicles table in Supabase (see setup guide).');
-    return;
-  }
-  setConfig({ email, url, key });
-  document.getElementById('setup-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+function showAuth() {
+  document.getElementById('auth-screen').classList.add('visible');
+  document.getElementById('app').classList.remove('visible');
+}
+function showApp() {
+  document.getElementById('auth-screen').classList.remove('visible');
+  document.getElementById('app').classList.add('visible');
   loadVehicles();
 }
 
-// ══════════════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════════════
+async function sendMagicLink() {
+  const email = document.getElementById('auth-email').value.trim();
+  if (!email) { alert('Please enter your email address.'); return; }
+  const redirectTo = window.location.href.split('#')[0];
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+  if (error) { alert('Error: ' + error.message); return; }
+  document.getElementById('auth-form-wrap').style.display = 'none';
+  document.getElementById('auth-success').classList.add('visible');
+}
+
+function confirmSignOut() { document.getElementById('signout-modal').classList.add('open'); }
+async function signOut() { await sb.auth.signOut(); closeModal('signout-modal'); }
+
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -446,261 +336,168 @@ function showScreen(name) {
   document.getElementById('nav-' + name).classList.add('active');
 }
 
-// ══════════════════════════════════════════════════════
-// DATE UTILITIES
-// ══════════════════════════════════════════════════════
-function today() {
-  const d = new Date(); d.setHours(0,0,0,0); return d;
-}
-function parseDate(str) {
-  if (!str) return null;
-  const [y,m,d] = str.split('-').map(Number);
-  return new Date(y, m-1, d);
-}
-function formatDate(str) {
-  if (!str) return '—';
-  const d = parseDate(str);
-  return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-}
-function daysUntil(str) {
-  if (!str) return null;
-  const diff = parseDate(str) - today();
-  return Math.ceil(diff / (1000*60*60*24));
-}
-function dateStatus(str) {
-  const d = daysUntil(str);
-  if (d === null) return null;
-  if (d < 0) return 'overdue';
-  if (d <= 30) return 'soon';
-  return 'ok';
-}
-function statusLabel(str) {
-  const d = daysUntil(str);
-  if (d === null) return null;
-  if (d < 0) return `${Math.abs(d)}d overdue`;
-  if (d === 0) return 'Due today';
-  if (d <= 30) return `Due in ${d}d`;
-  return `${formatDate(str)}`;
-}
+function today() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+function parseDate(str) { if (!str) return null; const [y,m,d] = str.split('-').map(Number); return new Date(y,m-1,d); }
+function formatDate(str) { if (!str) return '—'; return parseDate(str).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}); }
+function daysUntil(str) { if (!str) return null; return Math.ceil((parseDate(str) - today()) / (1000*60*60*24)); }
+function dateStatus(str) { const d = daysUntil(str); if (d===null) return null; if (d<0) return 'overdue'; if (d<=30) return 'soon'; return 'ok'; }
+function statusLabel(str) { const d = daysUntil(str); if (d===null) return null; if (d<0) return `${Math.abs(d)}d overdue`; if (d===0) return 'Due today'; if (d<=30) return `Due in ${d}d`; return formatDate(str); }
 
-// ══════════════════════════════════════════════════════
-// LOAD & RENDER VEHICLES
-// ══════════════════════════════════════════════════════
 async function loadVehicles() {
-  const cfg = getConfig();
-  if (!supabaseClient || !cfg) return;
-  const { data, error } = await supabaseClient
-    .from('vehicles')
-    .select('*')
-    .eq('user_email', cfg.email)
-    .order('created_at', { ascending: false });
+  if (!currentUser) return;
+  const { data, error } = await sb.from('vehicles').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
   if (error) { console.error(error); return; }
   vehicles = data || [];
   renderDashboard();
 }
 
 function renderDashboard() {
-  let overdue = 0, soon = 0, ok = 0;
-  const alerts = [];
+  let overdue=0, soon=0, ok=0;
   const list = document.getElementById('vehicles-list');
-
   if (vehicles.length === 0) {
     list.innerHTML = `<div class="empty-state"><div class="empty-icon">🚗</div><div class="empty-title">No vehicles yet</div><div class="empty-sub">Tap + Add Vehicle below to get started</div></div>`;
     updateCounts(0,0,0); return;
   }
-
   list.innerHTML = vehicles.map(v => {
-    const statuses = [
-      v.insurance_expiry ? dateStatus(v.insurance_expiry) : null,
-      v.mot_due ? dateStatus(v.mot_due) : null,
-      v.service_due ? dateStatus(v.service_due) : null
-    ].filter(Boolean);
-
+    const statuses = [v.insurance_expiry,v.mot_due,v.service_due].filter(Boolean).map(dateStatus).filter(Boolean);
     const hasOverdue = statuses.includes('overdue');
     const hasSoon = statuses.includes('soon');
-    const allOk = statuses.length > 0 && !hasOverdue && !hasSoon;
-
-    if (hasOverdue) overdue++;
-    else if (hasSoon) soon++;
-    else if (allOk) ok++;
-
-    const cardClass = hasOverdue ? 'has-overdue' : hasSoon ? 'has-soon' : allOk ? 'all-ok' : '';
-
+    const allOk = statuses.length>0 && !hasOverdue && !hasSoon;
+    if (hasOverdue) overdue++; else if (hasSoon) soon++; else if (allOk) ok++;
+    const cardClass = hasOverdue?'has-overdue':hasSoon?'has-soon':allOk?'all-ok':'';
     const badges = [
-      v.insurance_expiry ? badgeHtml('INS', v.insurance_expiry) : '',
-      v.mot_due ? badgeHtml('MOT', v.mot_due) : '',
-      v.service_due ? badgeHtml('SVC', v.service_due) : '',
+      v.insurance_expiry ? badgeHtml('INS',v.insurance_expiry) : '',
+      v.mot_due ? badgeHtml('MOT',v.mot_due) : '',
+      v.service_due ? badgeHtml('SVC',v.service_due) : '',
     ].join('');
-
     return `<div class="vehicle-card ${cardClass}" onclick="editVehicle('${v.id}')">
       <div class="vehicle-card-accent"></div>
       <div class="vc-top">
-        <div class="vc-name">${v.make} ${v.model}<br><small style="font-size:13px;color:var(--text2);font-weight:400">${v.year || ''} ${typeIcon(v.vehicle_type)}</small></div>
-        ${v.registration ? `<div class="vc-reg">${v.registration.toUpperCase()}</div>` : ''}
+        <div class="vc-name">${v.make} ${v.model}<br><small style="font-size:13px;color:var(--text2);font-weight:400">${v.year||''} ${typeIcon(v.vehicle_type)}</small></div>
+        ${v.registration?`<div class="vc-reg">${v.registration.toUpperCase()}</div>`:''}
       </div>
       <div class="vc-badges">${badges}</div>
     </div>`;
   }).join('');
-
-  updateCounts(overdue, soon, ok);
+  updateCounts(overdue,soon,ok);
 }
 
-function badgeHtml(label, dateStr) {
+function badgeHtml(label,dateStr) {
   const s = dateStatus(dateStr);
-  const cls = s === 'overdue' ? 'badge-overdue' : s === 'soon' ? 'badge-soon' : 'badge-ok';
-  const sl = statusLabel(dateStr);
-  return `<span class="badge ${cls}"><span class="badge-dot"></span>${label} · ${sl}</span>`;
+  const cls = s==='overdue'?'badge-overdue':s==='soon'?'badge-soon':'badge-ok';
+  return `<span class="badge ${cls}"><span class="badge-dot"></span>${label} · ${statusLabel(dateStr)}</span>`;
 }
-
-function typeIcon(t) {
-  return {car:'🚗',motorcycle:'🏍️',van:'🚐',other:'🚙'}[t] || '🚗';
-}
-
+function typeIcon(t) { return {car:'🚗',motorcycle:'🏍️',van:'🚐',other:'🚙'}[t]||'🚗'; }
 function updateCounts(o,s,k) {
-  document.getElementById('count-overdue').textContent = o;
-  document.getElementById('count-soon').textContent = s;
-  document.getElementById('count-ok').textContent = k;
+  document.getElementById('count-overdue').textContent=o;
+  document.getElementById('count-soon').textContent=s;
+  document.getElementById('count-ok').textContent=k;
 }
 
-// ══════════════════════════════════════════════════════
-// ADD / EDIT FORM
-// ══════════════════════════════════════════════════════
 function resetForm() {
-  document.getElementById('edit-id').value = '';
-  document.getElementById('form-title').innerHTML = 'Add <span>Vehicle</span>';
-  document.getElementById('delete-btn').style.display = 'none';
-  ['make','model','year','reg','ins-date','ins-company','ins-policy','ins-link',
-   'mot-date','mot-notes','svc-date','svc-mileage','svc-provider','svc-link','notes'].forEach(f => {
-    document.getElementById('f-' + f).value = '';
-  });
-  document.getElementById('f-type').value = 'car';
-  document.getElementById('f-ins-remind').checked = true;
-  document.getElementById('f-mot-remind').checked = true;
-  document.getElementById('f-svc-remind').checked = true;
+  document.getElementById('edit-id').value='';
+  document.getElementById('form-title').innerHTML='Add <span>Vehicle</span>';
+  document.getElementById('delete-btn').style.display='none';
+  ['make','model','year','reg','ins-date','ins-company','ins-policy','ins-link','mot-date','mot-notes','svc-date','svc-mileage','svc-provider','svc-link','notes'].forEach(f => { document.getElementById('f-'+f).value=''; });
+  document.getElementById('f-type').value='car';
+  document.getElementById('f-ins-remind').checked=true;
+  document.getElementById('f-mot-remind').checked=true;
+  document.getElementById('f-svc-remind').checked=true;
 }
 
 function editVehicle(id) {
-  const v = vehicles.find(x => x.id === id);
-  if (!v) return;
+  const v = vehicles.find(x=>x.id===id); if(!v) return;
   resetForm();
-  document.getElementById('edit-id').value = v.id;
-  document.getElementById('form-title').innerHTML = 'Edit <span>Vehicle</span>';
-  document.getElementById('delete-btn').style.display = 'block';
-
-  document.getElementById('f-make').value = v.make || '';
-  document.getElementById('f-model').value = v.model || '';
-  document.getElementById('f-year').value = v.year || '';
-  document.getElementById('f-reg').value = v.registration || '';
-  document.getElementById('f-type').value = v.vehicle_type || 'car';
-  document.getElementById('f-ins-date').value = v.insurance_expiry || '';
-  document.getElementById('f-ins-company').value = v.insurance_company || '';
-  document.getElementById('f-ins-policy').value = v.insurance_policy || '';
-  document.getElementById('f-ins-link').value = v.insurance_link || '';
-  document.getElementById('f-ins-remind').checked = v.insurance_reminder !== false;
-  document.getElementById('f-mot-date').value = v.mot_due || '';
-  document.getElementById('f-mot-notes').value = v.mot_notes || '';
-  document.getElementById('f-mot-remind').checked = v.mot_reminder !== false;
-  document.getElementById('f-svc-date').value = v.service_due || '';
-  document.getElementById('f-svc-mileage').value = v.service_mileage || '';
-  document.getElementById('f-svc-provider').value = v.service_provider || '';
-  document.getElementById('f-svc-link').value = v.service_link || '';
-  document.getElementById('f-svc-remind').checked = v.service_reminder !== false;
-  document.getElementById('f-notes').value = v.notes || '';
-
+  document.getElementById('edit-id').value=v.id;
+  document.getElementById('form-title').innerHTML='Edit <span>Vehicle</span>';
+  document.getElementById('delete-btn').style.display='block';
+  document.getElementById('f-make').value=v.make||'';
+  document.getElementById('f-model').value=v.model||'';
+  document.getElementById('f-year').value=v.year||'';
+  document.getElementById('f-reg').value=v.registration||'';
+  document.getElementById('f-type').value=v.vehicle_type||'car';
+  document.getElementById('f-ins-date').value=v.insurance_expiry||'';
+  document.getElementById('f-ins-company').value=v.insurance_company||'';
+  document.getElementById('f-ins-policy').value=v.insurance_policy||'';
+  document.getElementById('f-ins-link').value=v.insurance_link||'';
+  document.getElementById('f-ins-remind').checked=v.insurance_reminder!==false;
+  document.getElementById('f-mot-date').value=v.mot_due||'';
+  document.getElementById('f-mot-notes').value=v.mot_notes||'';
+  document.getElementById('f-mot-remind').checked=v.mot_reminder!==false;
+  document.getElementById('f-svc-date').value=v.service_due||'';
+  document.getElementById('f-svc-mileage').value=v.service_mileage||'';
+  document.getElementById('f-svc-provider').value=v.service_provider||'';
+  document.getElementById('f-svc-link').value=v.service_link||'';
+  document.getElementById('f-svc-remind').checked=v.service_reminder!==false;
+  document.getElementById('f-notes').value=v.notes||'';
   showScreen('add');
-  document.getElementById('nav-add').classList.add('active');
-  document.querySelectorAll('nav button').forEach(b => { if(b.id !== 'nav-add') b.classList.remove('active'); });
 }
 
 async function saveVehicle() {
-  const cfg = getConfig();
-  const make = document.getElementById('f-make').value.trim();
-  const model = document.getElementById('f-model').value.trim();
-  if (!make || !model) { alert('Please enter at least a make and model.'); return; }
-
+  const make=document.getElementById('f-make').value.trim();
+  const model=document.getElementById('f-model').value.trim();
+  if (!make||!model) { alert('Please enter at least a make and model.'); return; }
   const payload = {
-    user_email: cfg.email,
+    user_id: currentUser.id,
+    user_email: currentUser.email,
     make, model,
     year: document.getElementById('f-year').value.trim(),
     registration: document.getElementById('f-reg').value.trim().toUpperCase(),
     vehicle_type: document.getElementById('f-type').value,
-    insurance_expiry: document.getElementById('f-ins-date').value || null,
+    insurance_expiry: document.getElementById('f-ins-date').value||null,
     insurance_company: document.getElementById('f-ins-company').value.trim(),
     insurance_policy: document.getElementById('f-ins-policy').value.trim(),
     insurance_link: document.getElementById('f-ins-link').value.trim(),
     insurance_reminder: document.getElementById('f-ins-remind').checked,
-    mot_due: document.getElementById('f-mot-date').value || null,
+    mot_due: document.getElementById('f-mot-date').value||null,
     mot_notes: document.getElementById('f-mot-notes').value.trim(),
     mot_reminder: document.getElementById('f-mot-remind').checked,
-    service_due: document.getElementById('f-svc-date').value || null,
+    service_due: document.getElementById('f-svc-date').value||null,
     service_mileage: document.getElementById('f-svc-mileage').value.trim(),
     service_provider: document.getElementById('f-svc-provider').value.trim(),
     service_link: document.getElementById('f-svc-link').value.trim(),
     service_reminder: document.getElementById('f-svc-remind').checked,
     notes: document.getElementById('f-notes').value.trim(),
   };
-
-  const editId = document.getElementById('edit-id').value;
+  const editId=document.getElementById('edit-id').value;
   let error;
-  if (editId) {
-    ({ error } = await supabaseClient.from('vehicles').update(payload).eq('id', editId));
-  } else {
-    ({ error } = await supabaseClient.from('vehicles').insert(payload));
-  }
-  if (error) { alert('Save failed: ' + error.message); return; }
+  if (editId) { ({error}=await sb.from('vehicles').update(payload).eq('id',editId)); }
+  else { ({error}=await sb.from('vehicles').insert(payload)); }
+  if (error) { alert('Save failed: '+error.message); return; }
   await loadVehicles();
   showScreen('dashboard');
 }
 
-// ══════════════════════════════════════════════════════
-// DELETE
-// ══════════════════════════════════════════════════════
 function confirmDelete() { document.getElementById('delete-modal').classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
 async function deleteVehicle() {
-  const id = document.getElementById('edit-id').value;
-  if (!id) return;
-  const { error } = await supabaseClient.from('vehicles').delete().eq('id', id);
-  if (error) { alert('Delete failed: ' + error.message); return; }
+  const id=document.getElementById('edit-id').value; if(!id) return;
+  const {error}=await sb.from('vehicles').delete().eq('id',id);
+  if (error) { alert('Delete failed: '+error.message); return; }
   closeModal('delete-modal');
   await loadVehicles();
   showScreen('dashboard');
 }
 
-// ══════════════════════════════════════════════════════
-// SETTINGS
-// ══════════════════════════════════════════════════════
 function loadSettings() {
-  const cfg = getConfig() || {};
-  document.getElementById('s-email').value = cfg.email || '';
-  document.getElementById('s-url').value = cfg.url || '';
-  document.getElementById('s-key').value = cfg.key || '';
-}
-
-function saveSettings() {
-  const email = document.getElementById('s-email').value.trim();
-  const url = document.getElementById('s-url').value.trim();
-  const key = document.getElementById('s-key').value.trim();
-  if (!email || !url || !key) { alert('All fields are required.'); return; }
-  setConfig({ email, url, key });
-  initSupabase(url, key);
-  alert('Settings saved!');
+  if (currentUser) document.getElementById('settings-email').textContent = currentUser.email;
 }
 
 function exportData() {
-  const blob = new Blob([JSON.stringify(vehicles, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'vehiclevault-export.json';
+  const blob=new Blob([JSON.stringify(vehicles,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='vehiclevault-export.json';
   a.click();
-}
-
-function confirmReset() { document.getElementById('reset-modal').classList.add('open'); }
-function resetApp() {
-  localStorage.removeItem(CFG_KEY);
-  location.reload();
 }
 </script>
 </body>
 </html>
+Once pasted, use Cmd + F in the GitHub editor to find and replace the two placeholders, then click Commit changes. Let me know when it's done!
+
+
+
+
+
+
+Claude is AI and can make mistakes. Please double-check responses.
